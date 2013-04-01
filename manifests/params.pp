@@ -16,37 +16,26 @@ class mongodb::params {
 
   ### Application related parameters
 
-  $package = $::operatingsystem ? {
-    default => 'mongodb',
-  }
+  $use_10gen = false
+  $install_prerequisites = true
 
-  $service = $::operatingsystem ? {
-    default => 'mongodb',
-  }
+  ### Names depend on use_10gen and are defined in the main class
+  $package = ''
+  $service = ''
+  $config_file = ''
+  $data_dir = ''
+  $log_dir = ''
+  $log_file = ''
+  $pid_file = ''
+  $process_user = ''
 
   $service_status = $::operatingsystem ? {
     default => true,
   }
 
-  $process = $::operatingsystem ? {
-    default => 'mongodb',
-  }
+  $process = 'mongod'
 
-  $process_args = $::operatingsystem ? {
-    default => '',
-  }
-
-  $process_user = $::operatingsystem ? {
-    default => 'mongodb',
-  }
-
-  $config_dir = $::operatingsystem ? {
-    default => '/etc/mongodb',
-  }
-
-  $config_file = $::operatingsystem ? {
-    default => '/etc/mongodb/mongodb.conf',
-  }
+  $process_args = ''
 
   $config_file_mode = $::operatingsystem ? {
     default => '0644',
@@ -60,35 +49,12 @@ class mongodb::params {
     default => 'root',
   }
 
-  $config_file_init = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => '/etc/default/mongodb',
-    default                   => '/etc/sysconfig/mongodb',
-  }
-
-  $pid_file = $::operatingsystem ? {
-    default => '/var/run/mongodb.pid',
-  }
-
-  $data_dir = $::operatingsystem ? {
-    default => '/etc/mongodb',
-  }
-
-  $log_dir = $::operatingsystem ? {
-    default => '/var/log/mongodb',
-  }
-
-  $log_file = $::operatingsystem ? {
-    default => '/var/log/mongodb/mongodb.log',
-  }
-
-  $port = '42'
+  $port = '27017'
   $protocol = 'tcp'
 
   # General Settings
   $my_class = ''
   $source = ''
-  $source_dir = ''
-  $source_dir_purge = false
   $template = ''
   $options = ''
   $service_autorestart = true

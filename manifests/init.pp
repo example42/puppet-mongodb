@@ -5,6 +5,25 @@
 #
 # == Parameters
 #
+# Module specific parameters
+#
+# [*use_10gen*]
+#   Define if you want to use Official 10Gen repositories
+#   to install packages. Default: false (OS default package is used)
+#
+# [*install_prerequisites*]
+#   Set to false if you don't want install this module's prerequisites.
+#   They include the addition of 10Gen repos (when use_10gen=true)
+#   Via Example42 apt or yum modules.
+#
+# [*bind_ip*]
+#   Mongo server binding ip. Default: 127.0.0.1
+#   Set to $::ipaddress for a networked server
+#   Note that this parameter is used only if you explicitely define a
+#   template file
+#   To use the module's sample one: template => 'mongodb/mongodb.conf.erb'
+#
+#
 # Standard class parameters
 # Define the general class behaviour and customizations
 #
@@ -155,9 +174,6 @@
 # [*process_user*]
 #   The name of the user mongodb runs with. Used by puppi and monitor.
 #
-# [*config_dir*]
-#   Main configuration directory. Used by puppi
-#
 # [*config_file*]
 #   Main configuration file path
 #
@@ -169,9 +185,6 @@
 #
 # [*config_file_group*]
 #   Main configuration file path group
-#
-# [*config_file_init*]
-#   Path of configuration file sourced by init script
 #
 # [*pid_file*]
 #   Path of pid file. Used by monitor
@@ -200,49 +213,52 @@
 # See README for usage patterns.
 #
 class mongodb (
-  $my_class            = params_lookup( 'my_class' ),
-  $source              = params_lookup( 'source' ),
-  $source_dir          = params_lookup( 'source_dir' ),
-  $source_dir_purge    = params_lookup( 'source_dir_purge' ),
-  $template            = params_lookup( 'template' ),
-  $service_autorestart = params_lookup( 'service_autorestart' , 'global' ),
-  $options             = params_lookup( 'options' ),
-  $version             = params_lookup( 'version' ),
-  $absent              = params_lookup( 'absent' ),
-  $disable             = params_lookup( 'disable' ),
-  $disableboot         = params_lookup( 'disableboot' ),
-  $monitor             = params_lookup( 'monitor' , 'global' ),
-  $monitor_tool        = params_lookup( 'monitor_tool' , 'global' ),
-  $monitor_target      = params_lookup( 'monitor_target' , 'global' ),
-  $puppi               = params_lookup( 'puppi' , 'global' ),
-  $puppi_helper        = params_lookup( 'puppi_helper' , 'global' ),
-  $firewall            = params_lookup( 'firewall' , 'global' ),
-  $firewall_tool       = params_lookup( 'firewall_tool' , 'global' ),
-  $firewall_src        = params_lookup( 'firewall_src' , 'global' ),
-  $firewall_dst        = params_lookup( 'firewall_dst' , 'global' ),
-  $debug               = params_lookup( 'debug' , 'global' ),
-  $audit_only          = params_lookup( 'audit_only' , 'global' ),
-  $noops               = params_lookup( 'noops' ),
-  $package             = params_lookup( 'package' ),
-  $service             = params_lookup( 'service' ),
-  $service_status      = params_lookup( 'service_status' ),
-  $process             = params_lookup( 'process' ),
-  $process_args        = params_lookup( 'process_args' ),
-  $process_user        = params_lookup( 'process_user' ),
-  $config_dir          = params_lookup( 'config_dir' ),
-  $config_file         = params_lookup( 'config_file' ),
-  $config_file_mode    = params_lookup( 'config_file_mode' ),
-  $config_file_owner   = params_lookup( 'config_file_owner' ),
-  $config_file_group   = params_lookup( 'config_file_group' ),
-  $config_file_init    = params_lookup( 'config_file_init' ),
-  $pid_file            = params_lookup( 'pid_file' ),
-  $data_dir            = params_lookup( 'data_dir' ),
-  $log_dir             = params_lookup( 'log_dir' ),
-  $log_file            = params_lookup( 'log_file' ),
-  $port                = params_lookup( 'port' ),
-  $protocol            = params_lookup( 'protocol' )
+  $use_10gen             = params_lookup( 'use_10gen' ),
+  $install_prerequisites = params_lookup( 'install_prerequisites' ),
+  $bind_ip               = params_lookup( 'bind_ip' ),
+  $my_class              = params_lookup( 'my_class' ),
+  $source                = params_lookup( 'source' ),
+  $source_dir            = params_lookup( 'source_dir' ),
+  $source_dir_purge      = params_lookup( 'source_dir_purge' ),
+  $template              = params_lookup( 'template' ),
+  $service_autorestart   = params_lookup( 'service_autorestart' , 'global' ),
+  $options               = params_lookup( 'options' ),
+  $version               = params_lookup( 'version' ),
+  $absent                = params_lookup( 'absent' ),
+  $disable               = params_lookup( 'disable' ),
+  $disableboot           = params_lookup( 'disableboot' ),
+  $monitor               = params_lookup( 'monitor' , 'global' ),
+  $monitor_tool          = params_lookup( 'monitor_tool' , 'global' ),
+  $monitor_target        = params_lookup( 'monitor_target' , 'global' ),
+  $puppi                 = params_lookup( 'puppi' , 'global' ),
+  $puppi_helper          = params_lookup( 'puppi_helper' , 'global' ),
+  $firewall              = params_lookup( 'firewall' , 'global' ),
+  $firewall_tool         = params_lookup( 'firewall_tool' , 'global' ),
+  $firewall_src          = params_lookup( 'firewall_src' , 'global' ),
+  $firewall_dst          = params_lookup( 'firewall_dst' , 'global' ),
+  $debug                 = params_lookup( 'debug' , 'global' ),
+  $audit_only            = params_lookup( 'audit_only' , 'global' ),
+  $noops                 = params_lookup( 'noops' ),
+  $package               = params_lookup( 'package' ),
+  $service               = params_lookup( 'service' ),
+  $service_status        = params_lookup( 'service_status' ),
+  $process               = params_lookup( 'process' ),
+  $process_args          = params_lookup( 'process_args' ),
+  $process_user          = params_lookup( 'process_user' ),
+  $config_file           = params_lookup( 'config_file' ),
+  $config_file_mode      = params_lookup( 'config_file_mode' ),
+  $config_file_owner     = params_lookup( 'config_file_owner' ),
+  $config_file_group     = params_lookup( 'config_file_group' ),
+  $pid_file              = params_lookup( 'pid_file' ),
+  $data_dir              = params_lookup( 'data_dir' ),
+  $log_dir               = params_lookup( 'log_dir' ),
+  $log_file              = params_lookup( 'log_file' ),
+  $port                  = params_lookup( 'port' ),
+  $protocol              = params_lookup( 'protocol' )
   ) inherits mongodb::params {
 
+  $bool_use_10gen=any2bool($use_10gen)
+  $bool_install_prerequisites = any2bool($install_prerequisites)
   $bool_source_dir_purge=any2bool($source_dir_purge)
   $bool_service_autorestart=any2bool($service_autorestart)
   $bool_absent=any2bool($absent)
@@ -325,15 +341,122 @@ class mongodb (
     default   => template($mongodb::template),
   }
 
+  ### Definition of real variables according to use_10gen parameter
+  $real_package = $package ? {
+    ''      => $bool_use_10gen ? {
+      true  => $::operatingsystem ? {
+        /(?i:Debian|Ubuntu|Mint)/ => 'mongodb-10gen',
+        default                   => 'mongo-10gen-server',
+      },
+      false => 'mongodb-server'
+    },
+    default => $package,
+  }
+
+  $real_service = $service ? {
+    ''      => $bool_use_10gen ? {
+      true  => $::operatingsystem ? {
+        /(?i:RedHat|CentOS|Scientific|Fedora)/ => 'mongod',
+        default                                => 'mongodb',
+      },
+      false => 'mongodb'
+    },
+    default => $service,
+  }
+
+  $real_config_file = $config_file ? {
+    ''      => $bool_use_10gen ? {
+      true  => $::operatingsystem ? {
+        /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/etc/mongod.conf',
+        default                                => '/etc/mongodb.conf',
+      },
+      false => '/etc/mongodb.conf'
+    },
+    default => $config_file,
+  }
+
+  $real_data_dir = $data_dir ? {
+    ''      => $bool_use_10gen ? {
+      true  => $::operatingsystem ? {
+        /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/var/lib/mongo',
+        default                                => '/var/lib/mongodb',
+      },
+      false => '/var/lib/mongodb'
+    },
+    default => $data_dir,
+  }
+
+  $real_log_dir = $log_dir ? {
+    ''      => $bool_use_10gen ? {
+      true  => $::operatingsystem ? {
+        /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/var/log/mongo',
+        default                                => '/var/log/mongodb',
+      },
+      false => '/var/log/mongodb'
+    },
+    default => $log_dir,
+  }
+
+  $real_log_file = $log_file ? {
+    ''      => $bool_use_10gen ? {
+      true  => $::operatingsystem ? {
+        /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/var/log/mongo/mongod.conf',
+        default                                => '/var/log/mongodb/mongodb.conf',
+      },
+      false => '/var/log/mongodb/mongodb.conf'
+    },
+    default => $log_file,
+  }
+
+  $real_process_user = $process_user ? {
+    ''      => $bool_use_10gen ? {
+      true  => $::operatingsystem ? {
+        /(?i:RedHat|CentOS|Scientific|Fedora)/ => 'mongod',
+        default                                => 'mongodb',
+      },
+      false => 'mongodb'
+    },
+    default => $process_user,
+  }
+
+  $real_pid_file = $pid_file ? {
+    ''      => $bool_use_10gen ? {
+      true  => $::operatingsystem ? {
+        /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/var/run/mongodb/mongod.pid',
+        default                                => '',
+      },
+      false => $::operatingsystem ? {
+        /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/var/run/mongodb/mongodb.pid',
+        default                                => '',
+      },
+    },
+    default => $pid_file,
+  }
+
+  $real_monitor_target = $monitor_target ? {
+    ''      => $bind_ip,
+    default => $monitor_target ,
+  }
+
+  $real_firewall_dst = $firewall_dst ? {
+    ''      => $bind_ip,
+    default => $firewall_dst,
+  }
+
+  ### Prerequisites
+  if $mongodb::bool_install_prerequisites and $mongodb::bool_use_10gen {
+    require mongodb::prerequisites
+  }
+
   ### Managed resources
-  package { $mongodb::package:
+  package { $mongodb::real_package:
     ensure  => $mongodb::manage_package,
     noop    => $mongodb::bool_noops,
   }
 
   service { 'mongodb':
     ensure     => $mongodb::manage_service_ensure,
-    name       => $mongodb::service,
+    name       => $mongodb::real_service,
     enable     => $mongodb::manage_service_enable,
     hasstatus  => $mongodb::service_status,
     pattern    => $mongodb::process,
@@ -343,7 +466,7 @@ class mongodb (
 
   file { 'mongodb.conf':
     ensure  => $mongodb::manage_file,
-    path    => $mongodb::config_file,
+    path    => $mongodb::real_config_file,
     mode    => $mongodb::config_file_mode,
     owner   => $mongodb::config_file_owner,
     group   => $mongodb::config_file_group,
@@ -355,24 +478,6 @@ class mongodb (
     audit   => $mongodb::manage_audit,
     noop    => $mongodb::bool_noops,
   }
-
-  # The whole mongodb configuration directory can be recursively overriden
-  if $mongodb::source_dir {
-    file { 'mongodb.dir':
-      ensure  => directory,
-      path    => $mongodb::config_dir,
-      require => Package[$mongodb::package],
-      notify  => $mongodb::manage_service_autorestart,
-      source  => $mongodb::source_dir,
-      recurse => true,
-      purge   => $mongodb::bool_source_dir_purge,
-      force   => $mongodb::bool_source_dir_purge,
-      replace => $mongodb::manage_file_replace,
-      audit   => $mongodb::manage_audit,
-      noop    => $mongodb::bool_noops,
-    }
-  }
-
 
   ### Include custom class if $my_class is set
   if $mongodb::my_class {
@@ -398,7 +503,7 @@ class mongodb (
       monitor::port { "mongodb_${mongodb::protocol}_${mongodb::port}":
         protocol => $mongodb::protocol,
         port     => $mongodb::port,
-        target   => $mongodb::monitor_target,
+        target   => $mongodb::real_monitor_target,
         tool     => $mongodb::monitor_tool,
         enable   => $mongodb::manage_monitor,
         noop     => $mongodb::bool_noops,
@@ -408,7 +513,7 @@ class mongodb (
       monitor::process { 'mongodb_process':
         process  => $mongodb::process,
         service  => $mongodb::service,
-        pidfile  => $mongodb::pid_file,
+        pidfile  => $mongodb::real_pid_file,
         user     => $mongodb::process_user,
         argument => $mongodb::process_args,
         tool     => $mongodb::monitor_tool,
@@ -423,7 +528,7 @@ class mongodb (
   if $mongodb::bool_firewall == true and $mongodb::port != '' {
     firewall { "mongodb_${mongodb::protocol}_${mongodb::port}":
       source      => $mongodb::firewall_src,
-      destination => $mongodb::firewall_dst,
+      destination => $mongodb::real_firewall_dst,
       protocol    => $mongodb::protocol,
       port        => $mongodb::port,
       action      => 'allow',
