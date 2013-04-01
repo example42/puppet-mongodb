@@ -63,6 +63,13 @@ For detailed info about the logic and usage patterns of Example42 modules check 
         }
 
 
+* Install only the client package (Default: false, both client and server are installed)
+
+        class { 'mongodb':
+          client_only => true,
+        }
+
+
 * Install a specific version of mongodb package
 
         class { 'mongodb':

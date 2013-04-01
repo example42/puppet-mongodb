@@ -23,6 +23,11 @@
 #   template file
 #   To use the module's sample one: template => 'mongodb/mongodb.conf.erb'
 #
+# [*client_only*]
+#   Set to true if you want to install only the client packages. Default: false.
+#
+# [*package_client*]
+#   Name of the client package. Default: automatically detected.
 #
 # Standard class parameters
 # Define the general class behaviour and customizations
@@ -216,6 +221,8 @@ class mongodb (
   $use_10gen             = params_lookup( 'use_10gen' ),
   $install_prerequisites = params_lookup( 'install_prerequisites' ),
   $bind_ip               = params_lookup( 'bind_ip' ),
+  $client_only           = params_lookup( 'client_only' ),
+  $package_client        = params_lookup( 'package_client' ),
   $my_class              = params_lookup( 'my_class' ),
   $source                = params_lookup( 'source' ),
   $source_dir            = params_lookup( 'source_dir' ),
@@ -259,6 +266,7 @@ class mongodb (
 
   $bool_use_10gen=any2bool($use_10gen)
   $bool_install_prerequisites = any2bool($install_prerequisites)
+  $bool_client_only=any2bool($client_only)
   $bool_source_dir_purge=any2bool($source_dir_purge)
   $bool_service_autorestart=any2bool($service_autorestart)
   $bool_absent=any2bool($absent)
@@ -351,6 +359,20 @@ class mongodb (
       false => 'mongodb-server'
     },
     default => $package,
+  }
+
+  $real_package_client = $package_client ? {
+    ''      => $bool_use_10gen ? {
+      true  => $::operatingsystem ? {
+        /(?i:Debian|Ubuntu|Mint)/ => undef,
+        default                   => [ 'mongo-10gen' ],
+      },
+      false => $::operatingsystem ? {
+        /(?i:Debian|Ubuntu|Mint)/ => [ 'mongodb-clients' ],
+        default                   => [ 'mongodb' , 'libmongodb' ],
+      },
+    },
+    default => $package_client,
   }
 
   $real_service = $service ? {
@@ -452,97 +474,107 @@ class mongodb (
   }
 
   ### Managed resources
-  package { 'mongodb':
-    ensure  => $mongodb::manage_package,
-    name    => $mongodb::real_package,
-    noop    => $mongodb::bool_noops,
+
+  if $mongodb::real_package_client {
+    package { 'mongodb-client':
+      ensure  => $mongodb::manage_package,
+      name    => $mongodb::real_package_client,
+      noop    => $mongodb::bool_noops,
+    }
   }
+
+  if $bool_client_only != true {
+    package { 'mongodb':
+      ensure  => $mongodb::manage_package,
+      name    => $mongodb::real_package,
+      noop    => $mongodb::bool_noops,
+    }
 
   service { 'mongodb':
-    ensure     => $mongodb::manage_service_ensure,
-    name       => $mongodb::real_service,
-    enable     => $mongodb::manage_service_enable,
-    hasstatus  => $mongodb::service_status,
-    pattern    => $mongodb::process,
-    require    => Package['mongodb'],
-    noop       => $mongodb::bool_noops,
-  }
+      ensure     => $mongodb::manage_service_ensure,
+      name       => $mongodb::real_service,
+      enable     => $mongodb::manage_service_enable,
+      hasstatus  => $mongodb::service_status,
+      pattern    => $mongodb::process,
+      require    => Package['mongodb'],
+      noop       => $mongodb::bool_noops,
+    }
 
-  file { 'mongodb.conf':
-    ensure  => $mongodb::manage_file,
-    path    => $mongodb::real_config_file,
-    mode    => $mongodb::config_file_mode,
-    owner   => $mongodb::config_file_owner,
-    group   => $mongodb::config_file_group,
-    require => Package['mongodb'],
-    notify  => $mongodb::manage_service_autorestart,
-    source  => $mongodb::manage_file_source,
-    content => $mongodb::manage_file_content,
-    replace => $mongodb::manage_file_replace,
-    audit   => $mongodb::manage_audit,
-    noop    => $mongodb::bool_noops,
+    file { 'mongodb.conf':
+      ensure  => $mongodb::manage_file,
+      path    => $mongodb::real_config_file,
+      mode    => $mongodb::config_file_mode,
+      owner   => $mongodb::config_file_owner,
+      group   => $mongodb::config_file_group,
+      require => Package['mongodb'],
+      notify  => $mongodb::manage_service_autorestart,
+      source  => $mongodb::manage_file_source,
+      content => $mongodb::manage_file_content,
+      replace => $mongodb::manage_file_replace,
+      audit   => $mongodb::manage_audit,
+      noop    => $mongodb::bool_noops,
+    }
+
+    ### Provide puppi data, if enabled ( puppi => true )
+    if $mongodb::bool_puppi == true {
+      $classvars=get_class_args()
+      puppi::ze { 'mongodb':
+        ensure    => $mongodb::manage_file,
+        variables => $classvars,
+        helper    => $mongodb::puppi_helper,
+        noop      => $mongodb::bool_noops,
+      }
+    }
+
+
+    ### Service monitoring, if enabled ( monitor => true )
+    if $mongodb::bool_monitor == true {
+      if $mongodb::port != '' {
+        monitor::port { "mongodb_${mongodb::protocol}_${mongodb::port}":
+          protocol => $mongodb::protocol,
+          port     => $mongodb::port,
+          target   => $mongodb::real_monitor_target,
+          tool     => $mongodb::monitor_tool,
+          enable   => $mongodb::manage_monitor,
+          noop     => $mongodb::bool_noops,
+        }
+      }
+      if $mongodb::real_service != '' {
+        monitor::process { 'mongodb_process':
+          process  => $mongodb::process,
+          service  => $mongodb::service,
+          pidfile  => $mongodb::real_pid_file,
+          user     => $mongodb::process_user,
+          argument => $mongodb::process_args,
+          tool     => $mongodb::monitor_tool,
+          enable   => $mongodb::manage_monitor,
+          noop     => $mongodb::bool_noops,
+        }
+      }
+    }
+
+
+    ### Firewall management, if enabled ( firewall => true )
+    if $mongodb::bool_firewall == true and $mongodb::port != '' {
+      firewall { "mongodb_${mongodb::protocol}_${mongodb::port}":
+        source      => $mongodb::firewall_src,
+        destination => $mongodb::real_firewall_dst,
+        protocol    => $mongodb::protocol,
+        port        => $mongodb::port,
+        action      => 'allow',
+        direction   => 'input',
+        tool        => $mongodb::firewall_tool,
+        enable      => $mongodb::manage_firewall,
+        noop        => $mongodb::bool_noops,
+      }
+    }
+
   }
 
   ### Include custom class if $my_class is set
   if $mongodb::my_class {
     include $mongodb::my_class
   }
-
-
-  ### Provide puppi data, if enabled ( puppi => true )
-  if $mongodb::bool_puppi == true {
-    $classvars=get_class_args()
-    puppi::ze { 'mongodb':
-      ensure    => $mongodb::manage_file,
-      variables => $classvars,
-      helper    => $mongodb::puppi_helper,
-      noop      => $mongodb::bool_noops,
-    }
-  }
-
-
-  ### Service monitoring, if enabled ( monitor => true )
-  if $mongodb::bool_monitor == true {
-    if $mongodb::port != '' {
-      monitor::port { "mongodb_${mongodb::protocol}_${mongodb::port}":
-        protocol => $mongodb::protocol,
-        port     => $mongodb::port,
-        target   => $mongodb::real_monitor_target,
-        tool     => $mongodb::monitor_tool,
-        enable   => $mongodb::manage_monitor,
-        noop     => $mongodb::bool_noops,
-      }
-    }
-    if $mongodb::real_service != '' {
-      monitor::process { 'mongodb_process':
-        process  => $mongodb::process,
-        service  => $mongodb::service,
-        pidfile  => $mongodb::real_pid_file,
-        user     => $mongodb::process_user,
-        argument => $mongodb::process_args,
-        tool     => $mongodb::monitor_tool,
-        enable   => $mongodb::manage_monitor,
-        noop     => $mongodb::bool_noops,
-      }
-    }
-  }
-
-
-  ### Firewall management, if enabled ( firewall => true )
-  if $mongodb::bool_firewall == true and $mongodb::port != '' {
-    firewall { "mongodb_${mongodb::protocol}_${mongodb::port}":
-      source      => $mongodb::firewall_src,
-      destination => $mongodb::real_firewall_dst,
-      protocol    => $mongodb::protocol,
-      port        => $mongodb::port,
-      action      => 'allow',
-      direction   => 'input',
-      tool        => $mongodb::firewall_tool,
-      enable      => $mongodb::manage_firewall,
-      noop        => $mongodb::bool_noops,
-    }
-  }
-
 
   ### Debugging, if enabled ( debug => true )
   if $mongodb::bool_debug == true {
