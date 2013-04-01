@@ -449,8 +449,9 @@ class mongodb (
   }
 
   ### Managed resources
-  package { $mongodb::real_package:
+  package { 'mongodb':
     ensure  => $mongodb::manage_package,
+    name    => $mongodb::real_package,
     noop    => $mongodb::bool_noops,
   }
 
@@ -460,7 +461,7 @@ class mongodb (
     enable     => $mongodb::manage_service_enable,
     hasstatus  => $mongodb::service_status,
     pattern    => $mongodb::process,
-    require    => Package[$mongodb::package],
+    require    => Package['mongodb'],
     noop       => $mongodb::bool_noops,
   }
 
@@ -470,7 +471,7 @@ class mongodb (
     mode    => $mongodb::config_file_mode,
     owner   => $mongodb::config_file_owner,
     group   => $mongodb::config_file_group,
-    require => Package[$mongodb::package],
+    require => Package['mongodb'],
     notify  => $mongodb::manage_service_autorestart,
     source  => $mongodb::manage_file_source,
     content => $mongodb::manage_file_content,
@@ -509,7 +510,7 @@ class mongodb (
         noop     => $mongodb::bool_noops,
       }
     }
-    if $mongodb::service != '' {
+    if $mongodb::real_service != '' {
       monitor::process { 'mongodb_process':
         process  => $mongodb::process,
         service  => $mongodb::service,

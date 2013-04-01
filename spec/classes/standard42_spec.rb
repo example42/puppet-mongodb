@@ -87,13 +87,6 @@ describe 'mongodb' do
     it { should contain_file('mongodb.conf').with_source('puppet:///modules/mongodb/spec') }
   end
 
-  describe 'Test customizations - source_dir' do
-    let(:params) { {:source_dir => "puppet:///modules/mongodb/dir/spec" , :source_dir_purge => true } }
-    it { should contain_file('mongodb.dir').with_source('puppet:///modules/mongodb/dir/spec') }
-    it { should contain_file('mongodb.dir').with_purge('true') }
-    it { should contain_file('mongodb.dir').with_force('true') }
-  end
-
   describe 'Test customizations - custom class' do
     let(:params) { {:my_class => "mongodb::spec" } }
     it { should contain_file('mongodb.conf').with_content(/rspec.example42.com/) }
