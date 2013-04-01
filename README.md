@@ -21,6 +21,48 @@ For detailed info about the logic and usage patterns of Example42 modules check 
 
         class { 'mongodb': }
 
+* Install mongodb using 10Gen repository (provided by Example42 yum/apt modules)
+
+        class { 'mongodb':
+          use_10gen => true,
+        }
+
+* Install mongodb using 10Gen repository (but provide them with your own classes)
+
+        class { 'mongodb':
+          use_10gen             => true,
+          install_prerequisites => false,
+        }
+
+* Install mongodb, make it bind to $::ipaddress (default bind_ip is 127.0.0.1) and use the module's sample template to enable it.
+
+        class { 'mongodb':
+          bind_ip  => $::ipaddress,
+          template => 'mongodb/mongodb.conf.erb',
+        }
+
+* Install mongodb and provide an hash of custom parameters
+  Note: you must specify a template file where there are the relevant options_lookups for the keys you specified in the options hash. Here is used the module's sample one, where defaults for most of the options are set.
+
+        class { 'mongodb':
+          bind_ip  => $::ipaddress,
+          template => 'mongodb/mongodb.conf.erb',
+          options  => {
+            slave  => true,
+            source => '1.2.3.4',
+          }
+        }
+
+        class { 'mongodb':
+          bind_ip  => 1.2.3.4,
+          template => 'mongodb/mongodb.conf.erb',
+          options  => {
+            master  => true,
+            verbose => true,
+          }
+        }
+
+
 * Install a specific version of mongodb package
 
         class { 'mongodb':
@@ -59,13 +101,6 @@ For detailed info about the logic and usage patterns of Example42 modules check 
           source => [ "puppet:///modules/example42/mongodb/mongodb.conf-${hostname}" , "puppet:///modules/example42/mongodb/mongodb.conf" ], 
         }
 
-
-* Use custom source directory for the whole configuration dir
-
-        class { 'mongodb':
-          source_dir       => 'puppet:///modules/example42/mongodb/conf/',
-          source_dir_purge => false, # Set to true to purge any existing file not present in $source_dir
-        }
 
 * Use custom template for main config file. Note that template and source arguments are alternative. 
 

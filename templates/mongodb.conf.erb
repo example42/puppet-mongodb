@@ -1,0 +1,75 @@
+# File Managed by Puppet
+# mongo.conf
+
+logpath = <%= @log_file %>
+logappend=true
+fork = true
+port = <%= @port %>
+dbpath = <%= @data_dir %>
+pidfilepath = <%= @pid_file %>
+
+# Disables write-ahead journaling
+nojournal = <%= scope.function_options_lookup(['nojournal','false']) %>
+
+# Enables periodic logging of CPU utilization and I/O wait
+cpu = <%= scope.function_options_lookup(['cpu','false']) %>
+
+# Turn on/off security.  Off is currently the default
+auth = <%= scope.function_options_lookup(['auth','false']) %>
+
+# Verbose logging output.
+verbose = <%= scope.function_options_lookup(['verbose','false']) %>
+
+# Inspect all client data for validity on receipt
+# (from version 2.4 is true by default)
+objcheck = <%= scope.function_options_lookup(['objcheck','false']) %>
+
+# Enable db quota management
+quota = <%= scope.function_options_lookup(['quota','false']) %>
+
+# Set oplogging level where n is
+#   0=off (default)
+#   1=W
+#   2=R
+#   3=both
+#   7=W+some reads
+diaglog = <%= scope.function_options_lookup(['diaglog','0']) %>
+
+# Ignore query hints
+# nohints = true
+
+# Disable the HTTP interface (Defaults to localhost:27018).
+# Available since version 2.1.2 (Here commented for backwards compatibility)
+# nohttpinterface = <%= scope.function_options_lookup(['nohttpinterface','false']) %>
+
+# Turns off server-side scripting.
+# This will result in greatly limited functionality
+noscripting = <%= scope.function_options_lookup(['noscripting','false']) %>
+
+# Turns off table scans.  Any query that would do a table scan fails.
+notablescan = <%= scope.function_options_lookup(['notablescan','false']) %>
+
+# Disable data file preallocation.
+noprealloc = <%= scope.function_options_lookup(['noprealloc','false']) %>
+
+# Specify .ns file size for new databases.
+nssize = <%= scope.function_options_lookup(['nssize','16']) %>
+
+## MMS parameters. Here commented.
+# Account token for Mongo monitoring server.
+# mms-token = <%= scope.function_options_lookup(['mms-token','mongo']) %>
+
+# Server name for Mongo monitoring server.
+# mms-name = <%= scope.function_options_lookup(['mms-token','mongo']) %>
+
+# Ping interval for Mongo monitoring server.
+# mms-interval = <%= scope.function_options_lookup(['mms-interval','20']) %>
+
+## Replication Options
+slave = <%= scope.function_options_lookup(['slave','false']) %>
+master = <%= scope.function_options_lookup(['master','false']) %>
+source = <%= scope.function_options_lookup(['source','']) %>
+only = <%= scope.function_options_lookup(['only','']) %>
+
+slaveDelay = <%= scope.function_options_lookup(['slaveDelay','0']) %>
+autoresync = <%= scope.function_options_lookup(['autoresync','false']) %>
