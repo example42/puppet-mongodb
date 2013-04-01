@@ -18,6 +18,7 @@ class mongodb::params {
 
   $use_10gen = false
   $install_prerequisites = true
+  $bind_ip = '127.0.0.1'
 
   ### Names depend on use_10gen and are defined in the main class
   $package = ''
@@ -66,11 +67,11 @@ class mongodb::params {
   ### General module variables that can have a site or per module default
   $monitor = false
   $monitor_tool = ''
-  $monitor_target = $::ipaddress
+  $monitor_target = ''
   $firewall = false
   $firewall_tool = ''
   $firewall_src = '0.0.0.0/0'
-  $firewall_dst = $::ipaddress
+  $firewall_dst = ''
   $puppi = false
   $puppi_helper = 'standard'
   $debug = false
