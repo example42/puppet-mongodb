@@ -1,12 +1,13 @@
 # File Managed by Puppet
-# mongo.conf
+# Note: This is a sample template for mongodb.conf
+# Some options are commented because apply only to specific Mongo versions
 
-logpath = <%= @log_file %>
-logappend=true
-fork = true
-port = <%= @port %>
-dbpath = <%= @data_dir %>
-pidfilepath = <%= @pid_file %>
+logpath = <%= scope.lookupvar('mongodb::real_log_file') %>
+logappend = <%= scope.function_options_lookup(['logappend','true']) %>
+fork = <%= scope.function_options_lookup(['fork','true']) %>
+port = <%= scope.lookupvar('mongodb::port') %>
+dbpath = <%= scope.lookupvar('mongodb::real_data_dir') %>
+<% if scope.lookupvar('mongodb::real_pid_file') != '' %>pidfilepath = <%= scope.lookupvar('mongodb::real_pid_file') %><% end %>
 
 # Disables write-ahead journaling
 nojournal = <%= scope.function_options_lookup(['nojournal','false']) %>
@@ -71,5 +72,5 @@ master = <%= scope.function_options_lookup(['master','false']) %>
 source = <%= scope.function_options_lookup(['source','']) %>
 only = <%= scope.function_options_lookup(['only','']) %>
 
-slaveDelay = <%= scope.function_options_lookup(['slaveDelay','0']) %>
+# slaveDelay = <%= scope.function_options_lookup(['slaveDelay','0']) %>
 autoresync = <%= scope.function_options_lookup(['autoresync','false']) %>

@@ -339,19 +339,9 @@ class mongodb (
     false => true,
   }
 
-  $manage_file_source = $mongodb::source ? {
-    ''        => undef,
-    default   => $mongodb::source,
-  }
-
-  $manage_file_content = $mongodb::template ? {
-    ''        => undef,
-    default   => template($mongodb::template),
-  }
-
   ### Definition of real variables according to use_10gen parameter
-  $real_package = $package ? {
-    ''      => $bool_use_10gen ? {
+  $real_package = $mongodb::package ? {
+    ''      => $mongodb::bool_use_10gen ? {
       true  => $::operatingsystem ? {
         /(?i:Debian|Ubuntu|Mint)/ => 'mongodb-10gen',
         default                   => 'mongo-10gen-server',
@@ -361,8 +351,8 @@ class mongodb (
     default => $package,
   }
 
-  $real_package_client = $package_client ? {
-    ''      => $bool_use_10gen ? {
+  $real_package_client = $mongodb::package_client ? {
+    ''      => $mongodb::bool_use_10gen ? {
       true  => $::operatingsystem ? {
         /(?i:Debian|Ubuntu|Mint)/ => undef,
         default                   => [ 'mongo-10gen' ],
@@ -375,8 +365,8 @@ class mongodb (
     default => $package_client,
   }
 
-  $real_service = $service ? {
-    ''      => $bool_use_10gen ? {
+  $real_service = $mongodb::service ? {
+    ''      => $mongodb::bool_use_10gen ? {
       true  => $::operatingsystem ? {
         /(?i:RedHat|CentOS|Scientific|Fedora)/ => 'mongod',
         default                                => 'mongodb',
@@ -389,8 +379,8 @@ class mongodb (
     default => $service,
   }
 
-  $real_config_file = $config_file ? {
-    ''      => $bool_use_10gen ? {
+  $real_config_file = $mongodb::config_file ? {
+    ''      => $mongodb::bool_use_10gen ? {
       true  => $::operatingsystem ? {
         /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/etc/mongod.conf',
         default                                => '/etc/mongodb.conf',
@@ -400,52 +390,52 @@ class mongodb (
     default => $config_file,
   }
 
-  $real_data_dir = $data_dir ? {
-    ''      => $bool_use_10gen ? {
+  $real_data_dir = $mongodb::data_dir ? {
+    ''      => $mongodb::bool_use_10gen ? {
       true  => $::operatingsystem ? {
         /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/var/lib/mongo',
         default                                => '/var/lib/mongodb',
       },
-      false => '/var/lib/mongodb'
+      false => '/var/lib/mongodb',
     },
     default => $data_dir,
   }
 
-  $real_log_dir = $log_dir ? {
-    ''      => $bool_use_10gen ? {
+  $real_log_dir = $mongodb::log_dir ? {
+    ''      => $mongodb::bool_use_10gen ? {
       true  => $::operatingsystem ? {
         /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/var/log/mongo',
         default                                => '/var/log/mongodb',
       },
-      false => '/var/log/mongodb'
+      false => '/var/log/mongodb',
     },
     default => $log_dir,
   }
 
-  $real_log_file = $log_file ? {
-    ''      => $bool_use_10gen ? {
+  $real_log_file = $mongodb::log_file ? {
+    ''      => $mongodb::bool_use_10gen ? {
       true  => $::operatingsystem ? {
-        /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/var/log/mongo/mongod.conf',
-        default                                => '/var/log/mongodb/mongodb.conf',
+        /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/var/log/mongo/mongod.log',
+        default                                => '/var/log/mongodb/mongodb.log',
       },
-      false => '/var/log/mongodb/mongodb.conf'
+      false => '/var/log/mongodb/mongodb.log',
     },
     default => $log_file,
   }
 
-  $real_process_user = $process_user ? {
-    ''      => $bool_use_10gen ? {
+  $real_process_user = $mongodb::process_user ? {
+    ''      => $mongodb::bool_use_10gen ? {
       true  => $::operatingsystem ? {
         /(?i:RedHat|CentOS|Scientific|Fedora)/ => 'mongod',
         default                                => 'mongodb',
       },
-      false => 'mongodb'
+      false => 'mongodb',
     },
     default => $process_user,
   }
 
-  $real_pid_file = $pid_file ? {
-    ''      => $bool_use_10gen ? {
+  $real_pid_file = $mongodb::pid_file ? {
+    ''      => $mongodb::bool_use_10gen ? {
       true  => $::operatingsystem ? {
         /(?i:RedHat|CentOS|Scientific|Fedora)/ => '/var/run/mongodb/mongod.pid',
         default                                => '',
@@ -458,14 +448,25 @@ class mongodb (
     default => $pid_file,
   }
 
-  $real_monitor_target = $monitor_target ? {
-    ''      => $bind_ip,
+  $real_monitor_target = $mongodb::monitor_target ? {
+    ''      => $mongodb::bind_ip,
     default => $monitor_target ,
   }
 
-  $real_firewall_dst = $firewall_dst ? {
-    ''      => $bind_ip,
+  $real_firewall_dst = $mongodb::firewall_dst ? {
+    ''      => $mongodb::bind_ip,
     default => $firewall_dst,
+  }
+
+  ### Manage file contents
+  $manage_file_source = $mongodb::source ? {
+    ''        => undef,
+    default   => $mongodb::source,
+  }
+
+  $manage_file_content = $mongodb::template ? {
+    ''        => undef,
+    default   => template($mongodb::template),
   }
 
   ### Prerequisites
@@ -476,100 +477,13 @@ class mongodb (
   ### Managed resources
 
   if $mongodb::real_package_client {
-    package { 'mongodb-client':
-      ensure  => $mongodb::manage_package,
-      name    => $mongodb::real_package_client,
-      noop    => $mongodb::bool_noops,
-    }
+    include mongodb::client
   }
 
   if $bool_client_only != true {
-    package { 'mongodb':
-      ensure  => $mongodb::manage_package,
-      name    => $mongodb::real_package,
-      noop    => $mongodb::bool_noops,
-    }
-
-  service { 'mongodb':
-      ensure     => $mongodb::manage_service_ensure,
-      name       => $mongodb::real_service,
-      enable     => $mongodb::manage_service_enable,
-      hasstatus  => $mongodb::service_status,
-      pattern    => $mongodb::process,
-      require    => Package['mongodb'],
-      noop       => $mongodb::bool_noops,
-    }
-
-    file { 'mongodb.conf':
-      ensure  => $mongodb::manage_file,
-      path    => $mongodb::real_config_file,
-      mode    => $mongodb::config_file_mode,
-      owner   => $mongodb::config_file_owner,
-      group   => $mongodb::config_file_group,
-      require => Package['mongodb'],
-      notify  => $mongodb::manage_service_autorestart,
-      source  => $mongodb::manage_file_source,
-      content => $mongodb::manage_file_content,
-      replace => $mongodb::manage_file_replace,
-      audit   => $mongodb::manage_audit,
-      noop    => $mongodb::bool_noops,
-    }
-
-    ### Provide puppi data, if enabled ( puppi => true )
-    if $mongodb::bool_puppi == true {
-      $classvars=get_class_args()
-      puppi::ze { 'mongodb':
-        ensure    => $mongodb::manage_file,
-        variables => $classvars,
-        helper    => $mongodb::puppi_helper,
-        noop      => $mongodb::bool_noops,
-      }
-    }
-
-
-    ### Service monitoring, if enabled ( monitor => true )
-    if $mongodb::bool_monitor == true {
-      if $mongodb::port != '' {
-        monitor::port { "mongodb_${mongodb::protocol}_${mongodb::port}":
-          protocol => $mongodb::protocol,
-          port     => $mongodb::port,
-          target   => $mongodb::real_monitor_target,
-          tool     => $mongodb::monitor_tool,
-          enable   => $mongodb::manage_monitor,
-          noop     => $mongodb::bool_noops,
-        }
-      }
-      if $mongodb::real_service != '' {
-        monitor::process { 'mongodb_process':
-          process  => $mongodb::process,
-          service  => $mongodb::service,
-          pidfile  => $mongodb::real_pid_file,
-          user     => $mongodb::process_user,
-          argument => $mongodb::process_args,
-          tool     => $mongodb::monitor_tool,
-          enable   => $mongodb::manage_monitor,
-          noop     => $mongodb::bool_noops,
-        }
-      }
-    }
-
-
-    ### Firewall management, if enabled ( firewall => true )
-    if $mongodb::bool_firewall == true and $mongodb::port != '' {
-      firewall { "mongodb_${mongodb::protocol}_${mongodb::port}":
-        source      => $mongodb::firewall_src,
-        destination => $mongodb::real_firewall_dst,
-        protocol    => $mongodb::protocol,
-        port        => $mongodb::port,
-        action      => 'allow',
-        direction   => 'input',
-        tool        => $mongodb::firewall_tool,
-        enable      => $mongodb::manage_firewall,
-        noop        => $mongodb::bool_noops,
-      }
-    }
-
+    include mongodb::server
   }
+
 
   ### Include custom class if $my_class is set
   if $mongodb::my_class {
