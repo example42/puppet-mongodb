@@ -359,7 +359,10 @@ class mongodb (
         /(?i:RedHat|CentOS|Scientific|Fedora)/ => 'mongod',
         default                                => 'mongodb',
       },
-      false => 'mongodb'
+      false => $::operatingsystem ? {
+        /(?i:RedHat|CentOS|Scientific|Fedora)/ => 'mongod',
+        default                                => 'mongodb',
+      },
     },
     default => $service,
   }
