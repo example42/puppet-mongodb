@@ -470,7 +470,7 @@ class mongodb (
   }
 
   ### Prerequisites
-  if $mongodb::bool_install_prerequisites and $mongodb::bool_use_10gen {
+  if $mongodb::bool_install_prerequisites {
     require mongodb::prerequisites
   }
 

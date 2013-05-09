@@ -1,0 +1,7 @@
+// File created by Puppet
+<% if @ensure == 'present' -%>
+db.addUser("<%= @name %>", "<%= @password %>", <%= @roles %>);
+<% end -%>
+<% if @ensure == 'absent' -%>
+db.removeUser("<%= @user %>");
+<% end -%>
