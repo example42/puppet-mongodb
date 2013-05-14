@@ -21,7 +21,7 @@ define mongodb::user (
     }
   }
 
-  $mongodb_script_user = "mongo_user-${name}_${mongodb_db}.js"
+  $mongodb_script_user = "mongo_user-${name}_${db_name}.js"
 
   file { $mongodb_script_user:
       ensure  => present,
