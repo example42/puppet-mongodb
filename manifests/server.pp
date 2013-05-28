@@ -6,6 +6,7 @@ class mongodb::server {
 
   package { 'mongodb':
     ensure  => $mongodb::manage_package,
+    require => $mongodb::package_require,
     name    => $mongodb::real_package,
     noop    => $mongodb::bool_noops,
   }

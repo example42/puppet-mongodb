@@ -27,11 +27,11 @@ For detailed info about the logic and usage patterns of Example42 modules check 
           use_10gen => true,
         }
 
-* Install mongodb using 10Gen repository (but provide them with your own classes)
+* Install mongodb using 10Gen repository (but provide them with your own class)
 
         class { 'mongodb':
-          use_10gen             => true,
-          install_prerequisites => false,
+          use_10gen          => true,
+          dependency_class   => 'site::dependency_mongodb',
         }
 
 * Install mongodb, make it bind to $::ipaddress (default bind_ip is 127.0.0.1) and use the module's sample template to enable it.
