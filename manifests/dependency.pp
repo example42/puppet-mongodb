@@ -1,6 +1,6 @@
-# Class: mongodb::prerequisites
+# Class: mongodb::dependency
 #
-# This class installs mongodb prerequisites
+# This class installs mongodb dependency
 #
 # == Variables
 #
@@ -10,18 +10,24 @@
 #
 # This class is not intended to be used directly.
 # It's automatically included by mongodb if the parameter
-# install_prerequisites is set to true
+# install_dependency is set to true
 # Note: This class may contain resources available on the
 # Example42 modules set
 #
-class mongodb::prerequisites {
+class mongodb::dependency {
 
   case $::operatingsystem {
     redhat,centos,scientific,oraclelinux : {
-      require yum::repo::10gen
+      if $mongodb::bool_use_10gen == true {
+        require yum::repo::10gen
+      } else {
+        # require yum::repo::epel
+      }
     }
     ubuntu,debian : {
-      require apt::repo::10gen
+      if $mongodb::bool_use_10gen == true {
+        require apt::repo::10gen
+      }
     }
     default: { }
   }

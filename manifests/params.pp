@@ -17,7 +17,7 @@ class mongodb::params {
   ### Application related parameters
 
   $use_10gen = false
-  $install_prerequisites = true
+  $dependency_class = 'mongodb::dependency'
   $bind_ip = '127.0.0.1'
   $client_only = false
   $package_client = ''

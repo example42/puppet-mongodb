@@ -11,10 +11,8 @@
 #   Define if you want to use Official 10Gen repositories
 #   to install packages. Default: false (OS default package is used)
 #
-# [*install_prerequisites*]
-#   Set to false if you don't want install this module's prerequisites.
-#   They include the addition of 10Gen repos (when use_10gen=true)
-#   Via Example42 apt or yum modules.
+# [*dependency_class*]
+#   Name of the class containing dependencies required by the module
 #
 # [*bind_ip*]
 #   Mongo server binding ip. Default: 127.0.0.1
@@ -223,7 +221,7 @@
 #
 class mongodb (
   $use_10gen             = params_lookup( 'use_10gen' ),
-  $install_prerequisites = params_lookup( 'install_prerequisites' ),
+  $dependency_class      = params_lookup( 'dependency_class' ),
   $bind_ip               = params_lookup( 'bind_ip' ),
   $client_only           = params_lookup( 'client_only' ),
   $package_client        = params_lookup( 'package_client' ),
@@ -270,7 +268,6 @@ class mongodb (
   ) inherits mongodb::params {
 
   $bool_use_10gen=any2bool($use_10gen)
-  $bool_install_prerequisites = any2bool($install_prerequisites)
   $bool_client_only=any2bool($client_only)
   $bool_source_dir_purge=any2bool($source_dir_purge)
   $bool_service_autorestart=any2bool($service_autorestart)
@@ -474,9 +471,15 @@ class mongodb (
     default   => template($mongodb::template),
   }
 
+  $package_require = $mongodb::dependency_class ? {
+    ''      => undef,
+    undef   => undef,
+    default => Class[$mongodb::dependency_class],
+  }
+
   ### Prerequisites
-  if $mongodb::bool_install_prerequisites and $mongodb::bool_use_10gen {
-    require mongodb::prerequisites
+  if $mongodb::dependency_class {
+    include $mongodb::dependency_class
   }
 
   ### Managed resources
