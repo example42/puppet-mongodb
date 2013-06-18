@@ -21,6 +21,7 @@ class mongodb::params {
   $bind_ip = '127.0.0.1'
   $client_only = false
   $package_client = ''
+  $keyfile = ''
 
   ### Names depend on use_10gen and are defined in the main class
   $package = ''

@@ -29,6 +29,10 @@
 # [*package_client*]
 #   Name of the client package. Default: automatically detected.
 #
+# [*keyfile*]
+#   Path of the keyfile. If set a keyfile is automatically generated in the
+#   defined path. Default: '' (no file created)
+#
 # Standard class parameters
 # Define the general class behaviour and customizations
 #
@@ -223,6 +227,7 @@ class mongodb (
   $bind_ip               = params_lookup( 'bind_ip' ),
   $client_only           = params_lookup( 'client_only' ),
   $package_client        = params_lookup( 'package_client' ),
+  $keyfile               = params_lookup( 'keyfile' ),
   $my_class              = params_lookup( 'my_class' ),
   $source                = params_lookup( 'source' ),
   $source_dir            = params_lookup( 'source_dir' ),
@@ -488,6 +493,10 @@ class mongodb (
   ### Include custom class if $my_class is set
   if $mongodb::my_class {
     include $mongodb::my_class
+  }
+
+  if $mongodb::keyfile {
+    include mongodb::keyfile
   }
 
   ### Debugging, if enabled ( debug => true )
