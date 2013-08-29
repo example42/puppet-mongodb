@@ -1,3 +1,5 @@
+# Define: mongodb::user
+#
 define mongodb::user (
   $password,
   $roles       = '[]',
@@ -32,7 +34,7 @@ define mongodb::user (
       content => template('mongodb/user.js.erb'),
   }
 
-  exec { "mongo_user-${mongodb_user}-${mongodb_host}":
+  exec { "mongo_user-${name}-${db_name}":
       command     => "mongo ${cmd_options} ${db_host}:${db_port}/${db_name} ${js_dir}/${mongodb_script_user}",
       require     => Service['mongodb'],
       subscribe   => File[$mongodb_script_user],

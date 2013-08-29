@@ -4,8 +4,8 @@
 #
 class mongodb::keyfile {
 
- exec { 'generate_mongo_keyfile':
-    command => "openssl rand -base64 753 > $mongodb::keyfile",
+  exec { 'generate_mongo_keyfile':
+    command => "openssl rand -base64 753 > ${mongodb::keyfile}",
     path    => '/usr/bin:/bin:/usr/sbin:/sbin',
     creates => $mongodb::keyfile,
     notify  => Service['mongodb'],
