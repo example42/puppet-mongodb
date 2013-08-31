@@ -9,7 +9,7 @@ class mongodb::client {
       ensure  => $mongodb::manage_package,
       require => $mongodb::package_require,
       name    => $mongodb::real_package_client,
-      noop    => $mongodb::bool_noops,
+      noop    => $mongodb::noops,
     }
   }
 

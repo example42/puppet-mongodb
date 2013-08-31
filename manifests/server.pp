@@ -8,7 +8,7 @@ class mongodb::server {
     ensure  => $mongodb::manage_package,
     require => $mongodb::package_require,
     name    => $mongodb::real_package,
-    noop    => $mongodb::bool_noops,
+    noop    => $mongodb::noops,
   }
 
   service { 'mongodb':
@@ -18,7 +18,7 @@ class mongodb::server {
     hasstatus  => $mongodb::service_status,
     pattern    => $mongodb::process,
     require    => Package['mongodb'],
-    noop       => $mongodb::bool_noops,
+    noop       => $mongodb::noops,
   }
 
   file { 'mongodb.conf':
@@ -33,7 +33,7 @@ class mongodb::server {
     content => $mongodb::manage_file_content,
     replace => $mongodb::manage_file_replace,
     audit   => $mongodb::manage_audit,
-    noop    => $mongodb::bool_noops,
+    noop    => $mongodb::noops,
   }
 
   ### Provide puppi data, if enabled ( puppi => true )
@@ -43,7 +43,7 @@ class mongodb::server {
       ensure    => $mongodb::manage_file,
       variables => $classvars,
       helper    => $mongodb::puppi_helper,
-      noop      => $mongodb::bool_noops,
+      noop      => $mongodb::noops,
     }
   }
 
@@ -57,7 +57,7 @@ class mongodb::server {
         target   => $mongodb::real_monitor_target,
         tool     => $mongodb::monitor_tool,
         enable   => $mongodb::manage_monitor,
-        noop     => $mongodb::bool_noops,
+        noop     => $mongodb::noops,
       }
     }
     if $mongodb::real_service != '' {
@@ -69,7 +69,7 @@ class mongodb::server {
         argument => $mongodb::process_args,
         tool     => $mongodb::monitor_tool,
         enable   => $mongodb::manage_monitor,
-        noop     => $mongodb::bool_noops,
+        noop     => $mongodb::noops,
       }
     }
   }
@@ -86,7 +86,7 @@ class mongodb::server {
       direction   => 'input',
       tool        => $mongodb::firewall_tool,
       enable      => $mongodb::manage_firewall,
-      noop        => $mongodb::bool_noops,
+      noop        => $mongodb::noops,
     }
   }
 

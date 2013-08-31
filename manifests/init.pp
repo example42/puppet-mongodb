@@ -279,7 +279,6 @@ class mongodb (
   $bool_firewall=any2bool($firewall)
   $bool_debug=any2bool($debug)
   $bool_audit_only=any2bool($audit_only)
-  $bool_noops=any2bool($noops)
 
   ### Definition of some variables used in the module
   $manage_package = $mongodb::bool_absent ? {
@@ -511,7 +510,7 @@ class mongodb (
       owner   => 'root',
       group   => 'root',
       content => inline_template('<%= scope.to_hash.reject { |k,v| k.to_s =~ /(uptime.*|path|timestamp|free|.*password.*|.*psk.*|.*key)/ }.to_yaml %>'),
-      noop    => $mongodb::bool_noops,
+      noop    => $mongodb::noops,
     }
   }
 
