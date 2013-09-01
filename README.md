@@ -15,7 +15,7 @@ This module requires functions provided by the Example42 Puppi module (you need 
 For detailed info about the logic and usage patterns of Example42 modules check the DOCS directory on Example42 main modules set.
 
 
-## USAGE - Basic management
+## USAGE - Installation and configuration
 
 * Install mongodb with default settings
 
@@ -54,7 +54,7 @@ For detailed info about the logic and usage patterns of Example42 modules check 
         }
 
         class { 'mongodb':
-          bind_ip  => 1.2.3.4,
+          bind_ip  => '1.2.3.4',
           template => 'mongodb/mongodb.conf.erb',
           options  => {
             master  => true,
@@ -99,6 +99,18 @@ For detailed info about the logic and usage patterns of Example42 modules check 
         class { 'mongodb':
           noops => true
         }
+
+
+## USAGE - Modules defines
+
+The module provides some defines for different oprations. Refer to code and inline documentatin for usage details.
+
+* Create and manage users
+
+        mongodb::user { 'joe':
+          password => 'S$cr£t',
+        }
+
 
 
 ## USAGE - Overrides and Customizations
