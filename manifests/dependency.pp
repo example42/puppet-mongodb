@@ -19,14 +19,14 @@ class mongodb::dependency {
   case $::operatingsystem {
     redhat,centos,scientific,oraclelinux : {
       if $mongodb::bool_use_10gen == true {
-        require yum::repo::10gen
+        require 'yum::repo::10gen'
       } else {
         # require yum::repo::epel
       }
     }
     ubuntu,debian : {
       if $mongodb::bool_use_10gen == true {
-        require apt::repo::10gen
+        require 'apt::repo::10gen'
       }
     }
     default: { }
