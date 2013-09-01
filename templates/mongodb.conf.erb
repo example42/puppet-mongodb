@@ -67,10 +67,12 @@ nssize = <%= scope.function_options_lookup(['nssize','16']) %>
 # mms-interval = <%= scope.function_options_lookup(['mms-interval','20']) %>
 
 ## Replication Options
-slave = <%= scope.function_options_lookup(['slave','false']) %>
 master = <%= scope.function_options_lookup(['master','false']) %>
+<% if  scope.function_options_lookup(['slave','false']) == true %>
+slave = <%= scope.function_options_lookup(['slave','false']) %>
 source = <%= scope.function_options_lookup(['source','']) %>
 only = <%= scope.function_options_lookup(['only','']) %>
+<% end %>
 
 # slaveDelay = <%= scope.function_options_lookup(['slaveDelay','0']) %>
 autoresync = <%= scope.function_options_lookup(['autoresync','false']) %>
