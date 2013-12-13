@@ -1,4 +1,2 @@
-# Default class installation
-#
-class { 'mongodb':
-}
+# Basic module usage
+include mongodb

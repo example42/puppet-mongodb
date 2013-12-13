@@ -1,170 +1,165 @@
-# Puppet module: mongodb
+#mongodb
 
-This is a Puppet module for mongodb based on the second generation layout ("NextGen") of Example42 Puppet Modules.
+####Table of Contents
 
-Made by Alessandro Franceschi / Lab42
+1. [Overview](#overview)
+2. [Module Description](#module-description)
+3. [Setup](#setup)
+    * [Resources managed by mongodb module](#resources-managed-by-mongodb-module)
+    * [Setup requirements](#setup-requirements)
+    * [Beginning with module mongodb](#beginning-with-module-mongodb)
+4. [Usage](#usage)
+5. [Operating Systems Support](#operating-systems-support)
+6. [Development](#development)
 
-Official site: http://www.example42.com
+##Overview
 
-Official git repository: http://github.com/example42/puppet-mongodb
+This module installs, manages and configures mongodb.
 
-Released under the terms of Apache 2 License.
+##Module Description
 
-This module requires functions provided by the Example42 Puppi module (you need it even if you don't use and install Puppi)
+The module is based on **stdmod** naming standards version 0.9.0.
 
-For detailed info about the logic and usage patterns of Example42 modules check the DOCS directory on Example42 main modules set.
+Refer to http://github.com/stdmod/ for complete documentation on the common parameters.
 
 
-## USAGE - Installation and configuration
+##Setup
 
-* Install mongodb with default settings
+###Resources managed by mongodb module
+* This module installs the mongodb package
+* Enables the mongodb service
+* Can manage all the configuration files (by default no file is changed)
 
-        class { 'mongodb': }
+###Setup Requirements
+* PuppetLabs [stdlib module](https://github.com/puppetlabs/puppetlabs-stdlib)
+* StdMod [stdmod module](https://github.com/stdmod/stdmod)
+* Ripieenar [module_data](https://github.com/ripienaar/puppet-module-data)
+* Puppet version >= 2.7.x
+* Facter version >= 1.6.2
 
-* Install mongodb using 10Gen repository (provided by Example42 yum/apt modules)
+###Beginning with module mongodb
 
-        class { 'mongodb':
-          use_10gen => true,
-        }
+To install the package provided by the module just include it:
 
-* Install mongodb using 10Gen repository (but provide them with your own class)
+        include mongodb
 
-        class { 'mongodb':
-          use_10gen          => true,
-          dependency_class   => 'site::dependency_mongodb',
-        }
-
-* Install mongodb, make it bind to $::ipaddress (default bind_ip is 127.0.0.1) and use the module's sample template to enable it.
-
-        class { 'mongodb':
-          bind_ip  => $::ipaddress,
-          template => 'mongodb/mongodb.conf.erb',
-        }
-
-* Install mongodb and provide an hash of custom parameters
-  Note: you must specify a template file where there are the relevant options_lookups for the keys you specified in the options hash. Here is used the module's sample one, where defaults for most of the options are set.
-
-        class { 'mongodb':
-          bind_ip  => $::ipaddress,
-          template => 'mongodb/mongodb.conf.erb',
-          options  => {
-            slave  => true,
-            source => '1.2.3.4',
-          }
-        }
+The main class arguments can be provided either via Hiera (from Puppet 3.x) or direct parameters:
 
         class { 'mongodb':
-          bind_ip  => '1.2.3.4',
-          template => 'mongodb/mongodb.conf.erb',
-          options  => {
-            master  => true,
-            verbose => true,
-          }
+          parameter => value,
         }
 
+The module provides a generic define to manage any mongodb configuration file:
 
-* Install only the client package (Default: false, both client and server are installed)
-
-        class { 'mongodb':
-          client_only => true,
+        mongodb::conf { 'sample.conf':
+          content => '# Test',
         }
 
-
-* Install a specific version of mongodb package
-
-        class { 'mongodb':
-          version => '1.0.1',
-        }
-
-* Disable mongodb service.
-
-        class { 'mongodb':
-          disable => true
-        }
-
-* Remove mongodb package
-
-        class { 'mongodb':
-          absent => true
-        }
-
-* Enable auditing without making changes on existing mongodb configuration *files*
-
-        class { 'mongodb':
-          audit_only => true
-        }
-
-* Module dry-run: Do not make any change on *all* the resources provided by the module
-
-        class { 'mongodb':
-          noops => true
-        }
-
-
-## USAGE - Modules defines
-
-The module provides some defines for different oprations. Refer to code and inline documentatin for usage details.
-
-* Create and manage users
+To create and manage users:
 
         mongodb::user { 'joe':
           password => 'S$cr£t',
         }
 
 
+##Usage
 
-## USAGE - Overrides and Customizations
-* Use custom sources for main config file 
-
-        class { 'mongodb':
-          source => [ "puppet:///modules/example42/mongodb/mongodb.conf-${hostname}" , "puppet:///modules/example42/mongodb/mongodb.conf" ], 
-        }
-
-
-* Use custom template for main config file. Note that template and source arguments are alternative. 
+* A common way to use this module involves the management of the main configuration file via a custom template (provided in a custom site module):
 
         class { 'mongodb':
-          template => 'example42/mongodb/mongodb.conf.erb',
+          config_file_template => 'site/mongodb/mongodb.conf.erb',
         }
 
-* Automatically include a custom subclass
+* You can write custom templates that use setting provided but the config_file_options_hash paramenter
 
         class { 'mongodb':
-          my_class => 'example42::my_mongodb',
+          config_file_template      => 'site/mongodb/mongodb.conf.erb',
+          config_file_options_hash  => {
+            opt  => 'value',
+            opt2 => 'value2',
+          },
         }
 
-
-## USAGE - Example42 extensions management 
-* Activate puppi (recommended, but disabled by default)
+* Use custom source (here an array) for main configuration file. Note that template and source arguments are alternative.
 
         class { 'mongodb':
-          puppi    => true,
+          config_file_source => [ "puppet:///modules/site/mongodb/mongodb.conf-${hostname}" ,
+                                  "puppet:///modules/site/mongodb/mongodb.conf" ],
         }
 
-* Activate puppi and use a custom puppi_helper template (to be provided separately with a puppi::helper define ) to customize the output of puppi commands 
+
+* Use custom source directory for the whole configuration directory, where present.
 
         class { 'mongodb':
-          puppi        => true,
-          puppi_helper => 'myhelper', 
+          config_dir_source  => 'puppet:///modules/site/mongodb/conf/',
         }
 
-* Activate automatic monitoring (recommended, but disabled by default). This option requires the usage of Example42 monitor and relevant monitor tools modules
+* Use custom source directory for the whole configuration directory and purge all the local files that are not on the dir.
+  Note: This option can be used to be sure that the content of a directory is exactly the same you expect, but it is desctructive and may remove files.
 
         class { 'mongodb':
-          monitor      => true,
-          monitor_tool => [ 'nagios' , 'monit' , 'munin' ],
+          config_dir_source => 'puppet:///modules/site/mongodb/conf/',
+          config_dir_purge  => true, # Default: false.
         }
 
-* Activate automatic firewalling. This option requires the usage of Example42 firewall and relevant firewall tools modules
+* Use custom source directory for the whole configuration dir and define recursing policy.
 
-        class { 'mongodb':       
-          firewall      => true,
-          firewall_tool => 'iptables',
-          firewall_src  => '10.42.0.0/24',
-          firewall_dst  => $ipaddress_eth0,
+        class { 'mongodb':
+          config_dir_source    => 'puppet:///modules/site/mongodb/conf/',
+          config_dir_recursion => false, # Default: true.
+        }
+
+* Provide an hash of files resources to be created with mongodb::conf.
+
+        class { 'mongodb':
+          conf_hash => {
+            'mongodb.conf' => {
+              template => 'site/mongodb/mongodb.conf',
+            },
+            'mongodb.other.conf' => {
+              template => 'site/mongodb/mongodb.other.conf',
+            },
+          },
+        }
+
+* Do not trigger a service restart when a config file changes.
+
+        class { 'mongodb':
+          config_dir_notify => '', # Default: Service[mongodb]
+        }
+
+* Install only the mongodb client (by defalut both server and client are installed
+
+        class { 'mongodb':
+          server_package_name => '',
+        }
+
+* Use 10gen repository
+
+        class { 'mongodb':
+          repo_class => 'mongodb::repo::10gen',
         }
 
 
-## CONTINUOUS TESTING
+##Operating Systems Support
 
-Travis {<img src="https://travis-ci.org/example42/puppet-mongodb.png?branch=master" alt="Build Status" />}[https://travis-ci.org/example42/puppet-mongodb]
+This is tested on these OS:
+- RedHat osfamily 5 and 6
+- Debian 6 and 7
+- Ubuntu 10.04 and 12.04
+
+
+##Development
+
+Pull requests (PR) and bug reports via GitHub are welcomed.
+
+When submitting PR please follow these quidelines:
+- Provide puppet-lint compliant code
+- If possible provide rspec tests
+- Follow the module style and stdmod naming standards
+
+When submitting bug report please include or link:
+- The Puppet code that triggers the error
+- The output of facter on the system where you try it
+- All the relevant error logs
+- Any other information useful to undestand the context

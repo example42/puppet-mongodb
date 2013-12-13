@@ -1,0 +1,10 @@
+---
+mongodb::server_package_name: 'mongodb-10gen'
+mongodb::client_package_name: ''
+mongodb::service_name: 'mongodb'
+mongodb::config_file_path:  '/etc/mongodb.conf'
+mongodb::config_file_mode: '0644'
+mongodb::config_file_owner: 'root'
+mongodb::config_file_group: 'root'
+mongodb::config_dir_path: ''
+mongodb::process_user: mongodb

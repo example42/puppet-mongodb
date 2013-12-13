@@ -13,8 +13,8 @@ class mongodb::keyfile {
   file { $mongodb::keyfile:
     ensure  => present,
     mode    => '0600',
-    owner   => $mongodb::real_process_user,
-    group   => $mongodb::real_process_user,
+    owner   => $mongodb::process_user,
+    group   => $mongodb::process_user,
     require => Exec['generate_mongo_keyfile'],
   }
 }
