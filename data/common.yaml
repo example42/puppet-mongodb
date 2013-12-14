@@ -6,5 +6,5 @@ mongodb::config_file_path:  '/etc/mongodb.conf'
 mongodb::config_file_mode: '0644'
 mongodb::config_file_owner: 'root'
 mongodb::config_file_group: 'root'
-mongodb::config_dir_path: undef
-mongodb::process_user: mongodb
+mongodb::config_dir_path: ''
+mongodb::process_user: 'mongodb'

@@ -97,9 +97,15 @@ class mongodb (
 
 
   # Dependency class
+  anchor { '::mongodb::begin': }
+  anchor { '::mongodb::end': }
 
   if $mongodb::repo_class {
     include $mongodb::repo_class
+    Anchor['::mongodb::begin']
+    -> Class[$mongodb::repo_class]
+    -> Package[$mongodb::server_package_name]
+    -> Anchor['::mongodb::end']
   }
 
 
